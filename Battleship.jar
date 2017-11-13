@@ -1,0 +1,35 @@
+char board[10][10];
+initializeBoard;
+//placeStation(1, 1);
+
+
+public void initializeBoard
+{
+	for (int a = 0; a < 10; a++)
+	{
+		for (int b = 0; b < 10; b++)
+		{
+			board[a][b] = '~';
+			document.write(board[a][b]);
+		}
+	}
+}
+
+public void placeStation(x, y)
+{
+	board[x][y] = '#';
+}
+
+public void isHit(x, y)
+{
+	if (board[x][y] == '#')
+	{
+		return true;
+	}
+	return false;
+}
+
+public void sinkStation(x, y)
+{
+	board[x][y] = 'X';
+}
