@@ -34,12 +34,21 @@ io.sockets.on('connection',newConnection);
 function newConnection(socket){
 	console.log("new connection:" + socket.id);
 	//push a connection clients connected
+	var id = socket.id;
 	clients.push(socket.id);
 
 	//if there is a message that the client receives called 'mouse'
 	//execute mouseMsg
 	socket.on('mouse',mouseMsg);
 	socket.on('newRound', startNewRound);
+	socket.on('wordCheck', wordCheck);
+
+	function wordCheck(data){
+		console.log(data);
+		var isRight = (data==word);
+		console.log(isRight);
+		socket.emit('wordIs',isRight);
+	}
 
 	function startNewRound(data){
 		word = getRandomWord(noun_s);
@@ -49,6 +58,7 @@ function newConnection(socket){
 		//number between 0 and last element of clients
 		var randNum = Math.floor(Math.random() * clients.length-1);
 		socket.broadcast.to(clients[randNum]).emit('sendWord',newData);
+		io.emit('clear');
 		console.log("New word set to:" + word);
 	}
 
@@ -70,7 +80,9 @@ function newConnection(socket){
 }
 
 function getRandomWord(nouns){
+
  	 var randNoun = Math.floor(Math.random() * nouns.length);
- 	 //console.log(randNoun);
-  return nouns[randNoun];
+ 	 var randWord = nouns[randNoun]; 
+ 	 console.log(randWord);
+  return randWord;
 }

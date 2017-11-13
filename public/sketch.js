@@ -12,28 +12,25 @@ function setup(){
   //runs newDrawing when receives mouse broadcast
   socket.on('mouse', newDrawing);
   socket.on('sendWord', setWord);
+  socket.on('wordIs',isWordRight);
+  socket.on('clear',clearCanvas);
 
   //Game variables
-  isDrawer = true;
+  isDrawer = false;
   word = "";
 }
 
+function clearCanvas(){
+  clear();
+  background(51);
+}
 function setWord(data){
   word = data.wordSend;
   isDrawer = true;
+
 }
 
 var timeout = undefined;
-function mousePressed(){
-  //prevents double click on mobile applications
-  if (timeout !== undefined) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(function() {
-    timeout = undefined;
-    callNewRound();
-  }, 500);
-}
 
 function callNewRound(){
     isDrawer = false;
@@ -55,22 +52,45 @@ function newDrawing(data){
 function draw(){
   if(isDrawer){
     textSize(32);
-    fill(255);
+    fill(0);
     text(word,width/2,50);
+    document.getElementById("response").innerHTML = 'Your word is: ' + word;
   }
 }
 
       function checkWord() {
-        var word = document.getElementById("answer").value;
-        if(word === 'test'){
+        if(isDrawer){return;}
+        var word2 = document.getElementById("answer").value;
+        console.log("sending: " + word2);
+        socket.emit('wordCheck',word2);
+      }
+function clearRound(){
+  if (timeout !== undefined) {
+    clearTimeout(timeout);
+  }
+  timeout = setTimeout(function() {
+    timeout = undefined;
+    callNewRound();
+  }, 500);
+}
+
+function isWordRight(data){
+        if(data == true){
           document.getElementById("response").innerHTML = 'correct';
-          clear();
-          background(51);
+          //clear();
+          //background(51);
+            if (timeout !== undefined) {
+    clearTimeout(timeout);
+  }
+  timeout = setTimeout(function() {
+    timeout = undefined;
+    callNewRound();
+  }, 500);
         }
         else{
           document.getElementById("response").innerHTML = 'Try Again';
         }
-      }
+}
 
 function mouseDragged(){
   fill(255);
