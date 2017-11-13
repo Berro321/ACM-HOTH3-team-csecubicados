@@ -1,5 +1,0 @@
-<<<<<<< HEAD
-Hello World
-=======
-"Hack on the Hill"
->>>>>>> e7a6a66dd3f30e5c125c55b4095b9f61f525535e

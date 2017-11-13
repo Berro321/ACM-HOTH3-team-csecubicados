@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <title>Sockets Example</title>
+    
     <!--Required for socket.io client to work-->
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-    <!--script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js.map"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js.map"></script-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js.map"></script>
     <script src="libraries/p5.js" type="text/javascript"></script>
     <script src="libraries/p5.dom.js" type="text/javascript"></script>
     <script src="libraries/p5.sound.js" type="text/javascript"></script>
     <script src="sketch.js" type="text/javascript"></script>
-
     <style>
       body {
         padding: 20px;
@@ -21,5 +21,8 @@
     </style>
   </head>
   <body>
+     <input type = "text" id="answer" value="">
+    <button onclick="checkWord()"> Check </button>
+    <p id="response">Response</p>
   </body>
 </html>

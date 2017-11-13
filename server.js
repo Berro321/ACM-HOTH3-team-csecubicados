@@ -3,7 +3,7 @@ var express = require('express');
 
 //creating server
 var app = express();
-var server = app.listen(process.env.PORT || 8080,listen);
+var server = app.listen(process.env.PORT || 3000,listen);
 
 function listen() {
   var host = server.address().address;
@@ -22,15 +22,35 @@ var socket = require('socket.io');
 //takes care of input/output in library
 var io = socket(server);
 
+var noun_s = ["light bulb", "zebra","dog","clowns","table","cable","glasses","mouse"];
+
+var word = getRandomWord(noun_s);
+
+var clients = [];//contains id and position in array
+
 //runs newConnection when a connection occurs
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket){
 	console.log("new connection:" + socket.id);
+	//push a connection clients connected
+	clients.push(socket.id);
 
 	//if there is a message that the client receives called 'mouse'
 	//execute mouseMsg
 	socket.on('mouse',mouseMsg);
+	socket.on('newRound', startNewRound);
+
+	function startNewRound(data){
+		word = getRandomWord(noun_s);
+		var newData = {
+			wordSend: word
+		};
+		//number between 0 and last element of clients
+		var randNum = Math.floor(Math.random() * clients.length-1);
+		socket.broadcast.to(clients[randNum]).emit('sendWord',newData);
+		console.log("New word set to:" + word);
+	}
 
 	function mouseMsg(data){
 		console.log(data);
@@ -38,4 +58,19 @@ function newConnection(socket){
 		socket.broadcast.emit('mouse',data);
 		//io.sockets.emit('mouse',data); Sends to everyone, including self
 	}
+
+	socket.on('disconnect',function(){
+		console.log('User has disconnected.');
+		var num = clients.indexOf(socket.id);
+		if(num > -1)
+			clients.splice(num,1);
+
+		console.log(clients);
+	});
+}
+
+function getRandomWord(nouns){
+ 	 var randNoun = Math.floor(Math.random() * nouns.length);
+ 	 //console.log(randNoun);
+  return nouns[randNoun];
 }

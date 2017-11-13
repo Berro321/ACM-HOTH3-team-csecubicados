@@ -1,14 +1,49 @@
 var socket;
+var isDrawer;
+var word;
 
 function setup(){
-  socket = io();
+  //socket = io();
   //connect to server (change if ip changes)
-  socket = io.connect('http://169.232.241.112:8080');
-  createCanvas(500,500);
+  socket = io.connect('http://169.232.241.112:3000');
+  createCanvas(720,540);
   background(51);
 
   //runs newDrawing when receives mouse broadcast
   socket.on('mouse', newDrawing);
+  socket.on('sendWord', setWord);
+
+  //Game variables
+  isDrawer = true;
+  word = "";
+}
+
+function setWord(data){
+  word = data.wordSend;
+  isDrawer = true;
+}
+
+var timeout = undefined;
+function mousePressed(){
+  //prevents double click on mobile applications
+  if (timeout !== undefined) {
+    clearTimeout(timeout);
+  }
+  timeout = setTimeout(function() {
+    timeout = undefined;
+    callNewRound();
+  }, 500);
+}
+
+function callNewRound(){
+    isDrawer = false;
+    var data = {
+    restart: true
+  };
+
+  console.trace();
+  // Send that object to the socket
+  socket.emit('newRound',data);
 }
 
 function newDrawing(data){
@@ -18,15 +53,30 @@ function newDrawing(data){
 }
 
 function draw(){
-
+  if(isDrawer){
+    textSize(32);
+    fill(255);
+    text(word,width/2,50);
+  }
 }
 
-function mouseDragged() {
-  // Draw some white circles
+      function checkWord() {
+        var word = document.getElementById("answer").value;
+        if(word === 'test'){
+          document.getElementById("response").innerHTML = 'correct';
+          clear();
+          background(51);
+        }
+        else{
+          document.getElementById("response").innerHTML = 'Try Again';
+        }
+      }
+
+function mouseDragged(){
   fill(255);
   noStroke();
   ellipse(mouseX,mouseY,20,20);
-  // Send the mouse coordinates
+
   sendmouse(mouseX,mouseY);
 }
 
