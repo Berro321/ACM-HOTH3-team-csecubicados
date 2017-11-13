@@ -1,11 +1,12 @@
 var socket;
 var isDrawer;
 var word;
+var username;
 
 function setup(){
   //socket = io();
   //connect to server (change if ip changes)
-  socket = io.connect('http://169.232.241.112:3000');
+  socket = io.connect('http://128.97.167.117:3000');
   createCanvas(720,540);
   background(51);
 
@@ -13,79 +14,78 @@ function setup(){
   socket.on('mouse', newDrawing);
   socket.on('sendWord', setWord);
   socket.on('wordIs',isWordRight);
+  socket.on('restart',restart);
   socket.on('clear',clearCanvas);
 
   //Game variables
   isDrawer = false;
   word = "";
+
+
+}
+
+function restart(data){
+  isDrawer=false;
+  document.getElementById("response").innerHTML = 'Response';
+  clearCanvas();
 }
 
 function clearCanvas(){
   clear();
   background(51);
 }
+function clearBoard(){
+  if(!isDrawer){return;}
+  socket.emit('clearBoard',null);
+}
 function setWord(data){
-  word = data.wordSend;
+  clearCanvas();
+  console.log(data);
+  word = data;
   isDrawer = true;
+  document.getElementById("response").innerHTML = 'Your word is: ' + word;
 
 }
 
-var timeout = undefined;
-
 function callNewRound(){
     isDrawer = false;
-    var data = {
-    restart: true
-  };
+    document.getElementById("response").innerHTML = 'Response';
 
-  console.trace();
+  //console.trace();
   // Send that object to the socket
-  socket.emit('newRound',data);
+  socket.emit('newRound',null);
 }
 
 function newDrawing(data){
   noStroke();
-  fill(255);
-  ellipse(data.x,data.y,20,20);
+  stroke(255);
+  strokeWeight(10);
+  console.log("Receiving: " + data.px + " " + data.py);
+  line(data.x, data.y, data.px, data.py);
 }
 
 function draw(){
-  if(isDrawer){
-    textSize(32);
-    fill(0);
-    text(word,width/2,50);
-    document.getElementById("response").innerHTML = 'Your word is: ' + word;
-  }
+  //Nothing
 }
 
-      function checkWord() {
-        if(isDrawer){return;}
-        var word2 = document.getElementById("answer").value;
-        console.log("sending: " + word2);
-        socket.emit('wordCheck',word2);
-      }
+function checkWord() {
+  if(isDrawer){return;}
+    var word2 = document.getElementById("answer").value;
+    console.log("sending: " + word2);
+    socket.emit('wordCheck',word2);
+}
+
+var timeout = undefined;
 function clearRound(){
-  if (timeout !== undefined) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(function() {
-    timeout = undefined;
-    callNewRound();
-  }, 500);
+  //if(!isDrawer){return;}
+  callNewRound();
 }
 
 function isWordRight(data){
         if(data == true){
-          document.getElementById("response").innerHTML = 'correct';
-          //clear();
-          //background(51);
-            if (timeout !== undefined) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(function() {
-    timeout = undefined;
-    callNewRound();
-  }, 500);
+          document.getElementById("response").innerHTML = 'Correct!';
+          restart();
+          callNewRound();
         }
         else{
           document.getElementById("response").innerHTML = 'Try Again';
@@ -93,22 +93,26 @@ function isWordRight(data){
 }
 
 function mouseDragged(){
-  fill(255);
-  noStroke();
-  ellipse(mouseX,mouseY,20,20);
-
-  sendmouse(mouseX,mouseY);
+  if(!isDrawer){return;}
+  stroke(255);
+  strokeWeight(10);
+  line(mouseX, mouseY, pmouseX, pmouseY);
+  //send mouse data to server
+  sendmouse(mouseX,mouseY,pmouseX,pmouseY);
 }
 
 // Function for sending to the socket
-function sendmouse(xpos, ypos) {
+function sendmouse(xpos, ypos,pxpos, pypos) {
   // We are sending!
-  console.log("sendmouse: " + xpos + " " + ypos);
+  console.log("sendmouse: " + xpos + " " + ypos
+    + " " + pxpos + " " + pypos);
   
   // Make a little object with  and y
   var data = {
     x: xpos,
-    y: ypos
+    y: ypos,
+    px: pxpos,
+    py: pypos
   };
 
   // Send that object to the socket

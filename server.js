@@ -8,7 +8,7 @@ var server = app.listen(process.env.PORT || 3000,listen);
 function listen() {
   var host = server.address().address;
   var port = server.address().port;
-  console.log('Example app listening at http://' + host + ':' + port);
+  console.log('listening at http://' + host + ':' + port);
 }
 
 
@@ -34,7 +34,6 @@ io.sockets.on('connection',newConnection);
 function newConnection(socket){
 	console.log("new connection:" + socket.id);
 	//push a connection clients connected
-	var id = socket.id;
 	clients.push(socket.id);
 
 	//if there is a message that the client receives called 'mouse'
@@ -42,6 +41,11 @@ function newConnection(socket){
 	socket.on('mouse',mouseMsg);
 	socket.on('newRound', startNewRound);
 	socket.on('wordCheck', wordCheck);
+	socket.on('clearBoard', clearBoard);
+
+	function clearBoard(data){
+		io.emit('clear');
+	}
 
 	function wordCheck(data){
 		console.log(data);
@@ -51,26 +55,33 @@ function newConnection(socket){
 	}
 
 	function startNewRound(data){
+		//io.emit('restart',null);
 		word = getRandomWord(noun_s);
-		var newData = {
-			wordSend: word
-		};
 		//number between 0 and last element of clients
-		var randNum = Math.floor(Math.random() * clients.length-1);
-		socket.broadcast.to(clients[randNum]).emit('sendWord',newData);
-		io.emit('clear');
+		var randNum = Math.floor(Math.random() * clients.length);
+		console.log("Sending word to: " + clients[randNum]);
+		if(clients[randNum] == socket.id)
+			socket.emit('sendWord',word);
+		else
+			socket.broadcast.to(clients[randNum]).emit('sendWord',word);
 		console.log("New word set to:" + word);
+		//restart client normall for everyone else
+		for(var c = 0; c < clients.length;c++)
+			if(c != randNum)
+				socket.broadcast.to(clients[c]).emit('restart',null);
 	}
 
+
+
 	function mouseMsg(data){
-		console.log(data);
+		//console.log(data);
 		//All other clients receive the same data
 		socket.broadcast.emit('mouse',data);
 		//io.sockets.emit('mouse',data); Sends to everyone, including self
 	}
 
 	socket.on('disconnect',function(){
-		console.log('User has disconnected.');
+		console.log('User:'+ socket.id +' has disconnected.');
 		var num = clients.indexOf(socket.id);
 		if(num > -1)
 			clients.splice(num,1);
@@ -83,6 +94,6 @@ function getRandomWord(nouns){
 
  	 var randNoun = Math.floor(Math.random() * nouns.length);
  	 var randWord = nouns[randNoun]; 
- 	 console.log(randWord);
+ 	 //console.log(randWord);
   return randWord;
 }
